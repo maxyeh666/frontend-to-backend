@@ -1,7 +1,5 @@
 # 從前端到後端實作  
----
 ## 目的:了解前端到後端的運作與框架和Libery的使用  
----
 ### 使用技術:  
   * 前端:  
     * Html、CSS、Javascript、Bootstrap、Vue.js、axios  

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>從前端到後端實作</title>
+    
+    <!-- bootstrap4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+</head>
+<body>
+    <div id="app">
+        <div class="container-fluid">
+            <div class="row  bg-secondary mb-4">
+                <div class="col-12">
+                    <h2 class="text-center text-white display-4 p-4">
+                        從前端到後端實作(Vue.js+bootstrap+axios+PHP)
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <h3>使用者清單</h3>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-primary float-right" @click="showAddModal=true; clearMessage();">
+                        <i class="fas fa-user-plus pr-3"></i>
+                        增加新使用者
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <div class="alert alert-danger" v-if="errorMsg">{{ errorsMsg }}</div>
+            <div class="alert alert-success" v-if="successMsg">{{ successMsg }}</div>
+            <div class="row">
+                <table class="table table-striped table-bordered table-light table-hover">
+                    <thead class="bg-info">
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th>註冊名稱</th>
+                            <th>E-mail</th>
+                            <th>註冊日期</th>
+                            <th class="text-center">修改</th>
+                            <th class="text-center">刪除</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users">
+                            <td class="text-center">{{ user.ID }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.register_date }}</td>
+                            <td class="text-center">
+                                <a href="#" @click="showEditModal=true; selectUser(user)">
+                                    <i class="far fa-edit"></i>
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <a href="#" class="text-danger" @click="showDeleteModal=true; selectUser(user)">
+                                    <i class="far fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div v-if="showAddModal">
+            <div class="modal fade" :class="{'show': isShowClass,'d-block':showAddModal}" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-dark text-white">
+                            <div class="modal-title">
+                                新增使用者
+                            </div>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" @click="showAddModal=false">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <form action="#" method="POST">
+                                <div class="form-group">
+                                    <label for="my-input">使用者名稱</label>
+                                    <input type="text" name="name" class="form-control" placeholder="使用者名稱" v-model="newUser.name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="my-input">E-mail</label>
+                                    <input type="email" name="email" class="form-control" placeholder="E-mail" v-model="newUser.email">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <button type="button" class="btn btn-success col-3 mr-auto" data-dismiss="modal" @click="showAddModal=false; addUser(); clearMessage();"><i class="fas fa-check"></i>確定</button>
+                                    <button type="button" class="btn btn-danger col-3 ml-auto" @click="showAddModal=false; clearMessage();"><i class="fas fa-times"></i>取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-backdrop show"></div>
+        </div>
+
+        <div v-if="showEditModal">
+            <div class="modal fade" :class="{'show': isShowClass,'d-block':showEditModal}" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-dark text-white">
+                            <div class="modal-title">
+                                修改資料
+                            </div>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" @click="showEditModal=false; clearMessage();">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <form action="#" method="POST">
+                                <div class="form-group">
+                                    <label for="my-input">使用者名稱</label>
+                                    <input type="text" name="name" class="form-control" placeholder="使用者名稱" v-model="currentUser.name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="my-input">E-mail</label>
+                                    <input type="text" name="email" class="form-control" placeholder="E-mail" v-model="currentUser.email">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <button type="button" class="btn btn-success col-3 mr-auto" data-dismiss="modal" @click="showEditModal=false; updateUser(); clearMessage();"><i class="fas fa-check"></i>確定</button>
+                                    <button type="button" class="btn btn-danger col-3 ml-auto" @click="showEditModal=false; clearMessage();"><i class="fas fa-times"></i>取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-backdrop show"></div>
+        </div>
+
+        <div v-if="showDeleteModal">
+            <div class="modal fade" :class="{'show': isShowClass,'d-block':showDeleteModal}" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-dark text-white">
+                            <div class="modal-title">
+                                刪除使用者
+                            </div>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" @click="showDeleteModal=false">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="text-center">
+                                <h3 class="text-danger">即將刪除使用者</h3>
+                                <h3 class="text-info">{{ currentUser.name }}</h3>
+                                <h4>是否要繼續執行</h4>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <button type="button" class="btn btn-danger col-3 mr-auto" data-dismiss="modal" @click="showDeleteModal=false; deleteUser(); clearMessage();"><i class="fas fa-check"></i>確定</button>
+                                    <button type="button" class="btn btn-success col-3 ml-auto" @click="showDeleteModal=false; clearMessage();"><i class="fas fa-times"></i>取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-backdrop show"></div>
+        </div>
+    </div>
+
+
+    <!-- bootstrap4 -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/d17db0e822.js" crossorigin="anonymous"></script>
+
+    <!-- Vue.js -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js'></script>
+
+    <!-- axios -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.js'></script>
+
+    <!-- main.js -->
+    <script src="./js/main.js"></script>
+</body>
+</html>
